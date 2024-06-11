@@ -1,16 +1,13 @@
 package com.example.highvolume.service;
 
 import com.example.highvolume.entity.OrderRequest;
-import com.example.highvolume.entity.Warehouse;
 import com.example.highvolume.expections.OutOfStockException;
 import com.example.highvolume.expections.StockReservationException;
-import com.example.highvolume.expections.WarehouseNotFoundException;
 import com.example.highvolume.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -51,12 +48,7 @@ public class OrderService {
                 throw new OutOfStockException("Requested items are out of stock");
             }
 
-            List<Warehouse> selectedWarehouses = warehouseService.findWarehousesWithStock(orderRequest);
-            if (selectedWarehouses == null || selectedWarehouses.isEmpty()) {
-                throw new WarehouseNotFoundException("No warehouse found with sufficient stock");
-            }
-
-            boolean isReserved = inventoryService.reserveStock(selectedWarehouses, orderRequest);
+            boolean isReserved = inventoryService.reserveStock(orderRequest);
             if (!isReserved) {
                 throw new StockReservationException("Failed to reserve stock");
             }
